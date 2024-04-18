@@ -7,25 +7,36 @@
 </head>
 <body>
 
-    <style>
+    {% for i in nome%}
+    <h1>
+        Olá
+        {% if not i %}
+        Usuário,
+        {% else %}
+        {{i}},
+        {% endif%}
+        seja bem vinde!
+    </h1>
+    {% endfor %}
 
-        body{
-            background-color: palevioletred;
-        }
+    <br>
 
-        a{
-            color: red;
-            font-size: 20px;
-        }
+    {% for post in posts %}
+    <h2>{{post.titulo}}</h2>
+    <h3>{{post.texto}}</h3>
+    <strong><p>{{post.data_criacao}}</p></strong>
+    <br>
+    {% endfor %}
+        
+    
 
-    </style>
 
-    <h1>Olá usuário!</h1>
     <p>Você parece tenso, olhe esse gatinho:</p>
 
     <img src="https://www.patasdacasa.com.br/sites/default/files/inline-images/meme-gato-sorrindo.jpg" alt="gato sorrindo">
 
     <br>
-    <a href="https://github.com/raquelfrancaa/WebPythonOcean">Clique aqui para ser heackeado!</a>
+    <a href="https://www.pudim.com.br/" target="_blank">Clique aqui para ser heackeado!</a>
+
 </body>
 </html>
