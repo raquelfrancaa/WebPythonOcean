@@ -1,41 +1,67 @@
-# Do módulo flask importa pra mim a classe Flask
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, session, flash, request, url_for, redirect, abort
 import sqlite3
 
-# Criando uma instância da classe Flask, passando "Olá" como o nome do aplicativo
-app = Flask("Olá")
+app = Flask("Ola")
 
-# Criando variável para manipular o banco de dados
 DATABASE = "banco.bd"
 SECRET_KEY = "1234"
+
 app.config.from_object(__name__)
 
-# Função para criar a conexão com o banco de dados
 def conectar():
     return sqlite3.connect(DATABASE)
 
-# Função para executar a conexão
 @app.before_request
 def before_request():
     g.bd = conectar()
 
-# Função para encerrar a conexão com o banco de dados
 @app.teardown_request
 def teardown_request(f):
     g.bd.close()
 
-# Define uma rota para a raiz do site, utilizando o decorador @app.route("/")
-@app.route('/')
-# Define uma função associada à rota raiz que retorna a mensagem "Olá mundo"
+@app.route('/login', methods = ["POST", "GET"])
+def login():
+    erro = None
+    if(request.method == "POST"):
+        if request.form['username'] == "Ocean" and request.form['password'] == "ocean123":
+            session['logado'] = True
+            flash("Usuário logado" + request.form['username'])
+            return redirect(url_for('exibir_posts'))
+        erro = "Usuário e senha incorretos"
+        return render_template("login.html", erro = erro)
+    
+    return render_template("login.html")
 
+@app.route('/logout')
+def logout():
+    session.pop('logado', None)
+    flash("Logout efetuado")
+    return redirect(url_for("login"))
+
+@app.route('/')
 def exibir_posts():
+
     sql = "SELECT titulo, texto, data_criacao FROM posts ORDER BY id DESC"
     resultado = g.bd.execute(sql)
+    posts = []
 
-    posts = [
-        {"titulo": "Os Sete Maridos de Evelyn Hugo", "texto": "Querer dar um passo maior que a perna é um sinal claro de que a pessoa não sabe o que está fazendo.", "data_criacao": "13 de junho de 2017"},
-        {"titulo": "Tudo em Todo o Lugar ao Mesmo Tempo", "texto": "Cada rejeição, cada decepção trouxe você aqui. Para este momento. Não deixe que nada a distraia.", "data_criacao": "23 de junho de 2022"}
-    ]
+    for titulo, texto, data_criacao in resultado.fetchall():
+        posts.append({
+            "titulo": titulo,
+            "texto": texto,
+            "data_criacao": data_criacao
+        })
 
-    nome_usuario = ["Raquel", "Luiza", "Pedro", "João"]
-    return render_template("ola.html", nome = nome_usuario, posts = posts)
+    return render_template("exibir_posts.html", post = posts)
+
+@app.route('/inserir', methods = ['POST', 'GET'])
+def inserir_posts():
+    if not session.get('logado'):
+        abort(401)
+    titulo = request.form.get('titulo')
+    texto = request.form.get('texto')
+    sql = 'INSERT INTO posts (titulo, texto) VALUES (?, ?)'
+    g.bd.execute(sql, [titulo, texto])
+    g.bd.commit()
+    flash("Novo post inserido!")
+    return redirect(url_for("exibir_posts"))
