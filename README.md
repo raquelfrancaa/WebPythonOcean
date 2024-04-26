@@ -1,4 +1,4 @@
-# Blog desenvolvido durante o Curso do Samsung Ocean
+# Blog Ocean
 
 ![Preview do Blog](static/imagens/preview-blog-ocean.png)
 
